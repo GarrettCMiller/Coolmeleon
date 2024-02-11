@@ -92,7 +92,7 @@ HeatingDevice heater(22, &tempProbe);
 
 #pragma endregion
 
-WaterPump waterPump(44, 20);
+WaterPump feederWaterPump(44, 20);
 
 #pragma endregion
 

@@ -9,7 +9,6 @@
 // Includes
 //#define USE_U8G2
 
-#include "ToggleSwitch.h"
 #include "BlunoShield.h"
 #include "OLEDMenu.h"
 #include "BiDiWaterPump.h"
@@ -17,32 +16,35 @@
 //#include "SHT30Sensor.h"
 #include "DS18B20Probe.h"
 #include "LEDToggleSwitch.h"
+#include "LEDGroup4.h"
+
+void (*resetFunc)(void) = 0;	//declare reset function at address 0
 
 #pragma region Global Variables
 
-#pragma region Water Pump
+#pragma region Feeder Water Pump
 
 //1st pin should have PWM support to control strength
 //2nd and 3rd pins determine direction of flow
-BiDiWaterPump waterPump(44, 50, 51);
+BiDiWaterPump feederWaterPump(44, 50, 51, true, 1, "");
 
-uint8_t TurnPumpOn(bool on)
+uint8_t TurnFeederPumpOn(bool on)
 {
-	return waterPump.TurnOn(on);
+	return feederWaterPump.TurnOn(on);
 }
 
-RangedValueB pumpRelayState = RangedValueB("Pump State", TurnPumpOn);
+RangedValueB feederPumpRelayState = RangedValueB("", TurnFeederPumpOn);
 
-void SetPumpStrength(uint8_t newStrength)
+void SetFeederPumpStrength(uint8_t newStrength)
 {
-	/*return*/ waterPump.SetPWMStrength(newStrength);
+	/*return*/ feederWaterPump.SetPWMStrength(newStrength);
 }
 
-RangedValueU8 pumpStrengthValue = RangedValueU8("Pump Strength", SetPumpStrength);
+RangedValueU8 feederPumpStrengthValue = RangedValueU8("", SetFeederPumpStrength);
 
 #pragma endregion
 
-#pragma region Temp
+#pragma region Feeder Temp Probe
 
 DS18B20Probe tempProbe;
 
@@ -50,13 +52,48 @@ DS18B20Probe tempProbe;
 
 #pragma endregion
 
-#pragma region Cricket Heater
+#pragma region Feeder Heater
 
-HeatingDevice heater1(22, &tempProbe, 70, 75);
+HeatingDevice feederHeater(22, &tempProbe, 70, 75);
+
+uint8_t TurnHeaterOn(bool on)
+{
+	return feederHeater.TurnOn(on);
+}
+
+RangedValueB heaterRelayState = RangedValueB("", TurnHeaterOn);
 
 #pragma endregion
 
-LEDToggleSwitch heaterToggle(24, 25, "Heater Switch");
+#pragma region Main Water Pump
+
+//Should be PWM-capable to control pump strength
+WaterPump mainWaterPump(45, 255, "");
+
+uint8_t TurnMainPumpOn(bool on)
+{
+	return mainWaterPump.TurnOn(on);
+}
+
+RangedValueB mainPumpRelayState = RangedValueB("", TurnMainPumpOn);
+
+void SetMainPumpStrength(uint8_t newStrength)
+{
+	/*return*/ mainWaterPump.SetPWMStrength(newStrength);
+}
+
+RangedValueU8 mainPumpStrengthValue = RangedValueU8("", SetMainPumpStrength);
+
+#pragma endregion
+
+#pragma region LED Toggle Switches
+
+LEDToggleSwitch mainWaterPumpToggle(24, 25, "");
+LEDToggleSwitch feederHeaterToggle(26, 27, "");
+LEDToggleSwitch feederWaterPumpToggle(28, 29, "");
+LEDToggleSwitch masterToggle(30, 31, "");
+
+#pragma endregion
 
 #pragma endregion
 
@@ -66,8 +103,8 @@ LEDToggleSwitch heaterToggle(24, 25, "Heater Switch");
 
 MenuOption waterPumpPageOptions[] =
 {
-	MenuOption("Enabled", pumpRelayState),
-	MenuOption("Strength", pumpStrengthValue)
+	MenuOption("Enabled", feederPumpRelayState),
+	MenuOption("Strength", feederPumpStrengthValue)
 };
 
 OLEDPage waterPumpPage("Water Pump", MenuOptionCount(waterPumpPageOptions), waterPumpPageOptions);
@@ -121,7 +158,7 @@ void drawCallback(OLED& oled)
 	//oled.print(F("%"));
 
 	String messageText = "Heater: ";
-	messageText += heater1.IsOn() ? "ON" : "OFF";
+	messageText += feederHeater.IsOn() ? "ON" : "OFF";
 	oled.setFont(u8g_font_helvB10);
 	oled.setPrintPos(0, 60);
 	oled.print(messageText);
@@ -172,21 +209,33 @@ void processInputCallback(PlainProtocol& input)
 /// </summary>
 void InitializeDevices()
 {
-	//pinMode(22, INPUT_PULLUP);
-	waterPump.Initialize();
+	mainWaterPump.Initialize();
+	mainWaterPumpToggle.Initialize();
 
-	heater1.Initialize();
-
-	blunoShield.SetDrawMode(BlunoShield::eDM_Custom);
+	feederWaterPump.Initialize();
+	feederWaterPumpToggle.Initialize();
 
 	tempProbe.Initialize();
+	feederHeater.Initialize();
+	feederHeaterToggle.Initialize();	
 
-	//Set var names from PROGMEM strings
-	/*tempMinDayBasking.SetName(F("Day Temp Min Basking"));
-	tempMaxDayBasking.SetName(F("Day Temp Max Basking"));
+	blunoShield.SetDrawMode(BlunoShield::eDM_Custom);	
 
-	humMinDayBasking.SetName(F("Day Hum Min Basking"));
-	humMaxDayBasking.SetName(F("Day Hum Max Basking"));*/
+	//Set names from PROGMEM strings to save RAM
+	mainWaterPump.SetName(F("Main Water Pump"));
+	mainPumpRelayState.SetName(F("Main Pump State"));
+	mainPumpStrengthValue.SetName(F("Main Pump Strength"));
+	mainWaterPumpToggle.SetName(F("Main Water Pump Switch"));
+
+	feederWaterPump.SetName(F("Feeder Water Pump"));
+	feederPumpRelayState.SetName(F("Feeder Pump State"));
+	feederPumpStrengthValue.SetName(F("Feeder Pump Strength"));
+	feederWaterPumpToggle.SetName(F("Feeder Water Pump Switch"));
+	
+	heaterRelayState.SetName(F("Heater State"));
+	feederHeaterToggle.SetName(F("Feeder Heater Switch"));
+
+	masterToggle.SetName(F("Master Switch"));
 }
 
 /// <summary>
@@ -385,24 +434,35 @@ void UpdateObjects()
 	DS18B20Probe::UpdateSensors();
 
 	//waterPump.SetPWMStrength(blunoShield.GetKnobValue() / 4);
-	waterPump.Update();
+	feederWaterPump.Update();
 
-	heater1.Update();
-
-	float temp = tempProbe.GetTemperature();
-
-	if (heater1.IsOn())
-		blunoShield.GetLED().SetColor(255, 0, 0);
-	else if (temp > heater1.GetMaxTemp())
-		blunoShield.GetLED().SetColor(0, 255, 0);
-
-	static ArduinoTimer tooHotAlarmTimer(10 TSECONDS, true);
-
-	if (temp > 90 && tooHotAlarmTimer.IsReady())
+	if (feederHeaterToggle.IsOn())
 	{
-		blunoShield.GetBuzzer().Play(220, 1000);
-	}
+		feederHeater.Update();
 
+		float temp = tempProbe.GetTemperature();
+
+		if (feederHeater.IsOn())
+			blunoShield.GetLED().SetColor(255, 0, 0);
+		else if (temp > feederHeater.GetMaxTemp())
+			blunoShield.GetLED().SetColor(0, 255, 0);
+
+		static ArduinoTimer tooHotAlarmTimer(10 TSECONDS, true);
+
+		if (temp > 90 && tooHotAlarmTimer.IsReady())
+		{
+			blunoShield.GetBuzzer().Play(220, 1000);
+		}
+	}
+	else
+	{
+		if (feederHeater.IsOn())
+		{
+			feederHeater.TurnOn(false);
+			feederHeater.Update();
+		}
+	}
+	
 	/*if (temp < heater1.GetMaxTemp())
 		blunoShield.GetLED().SetColor(255, 0, 0);
 	else if (temp > heater1.GetMaxTemp())
@@ -455,14 +515,17 @@ void setup()
 	//First, and foremost, initialize all necessary Serial connections
 	InitializeAllSerial();
 
+	//Initialize all local devices
+	InitializeDevices();
+
+	while (!masterToggle.IsOn())
+		delay(500);
+
 	//Set up the Bluno accessory shield
 	InitializeBlunoShield();
 
 	//Create and initialize the menu system
 	SetupMenuSystem();
-
-	//Initialize all local devices
-	InitializeDevices();
 }
 
 /// <summary>
@@ -486,6 +549,9 @@ void loop()
 	//Update all of our objects (BlunoShield, lights,
 	//fogger, mister, heater, fans, etc)
 	UpdateObjects();
+
+	if (!masterToggle.IsOn())
+		resetFunc();
 }
 
 #pragma endregion
