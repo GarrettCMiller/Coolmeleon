@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Coolmeleon", "Coolmeleon.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ArduinoCricketCageLivingAnimalInteriorMonitor", "..\ArduinoCricketCageLivingAnimalInteriorMonitor\ArduinoCricketCageLivingAnimalInteriorMonitor.vcxproj", "{A1289C85-9202-40B6-8027-E3A82BEA2972}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CoolmeleonWaterPump", "..\CoolmeleonWaterPump\CoolmeleonWaterPump.vcxproj", "{C980A6C7-82E8-409F-9070-410FECB2FEA8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.ActiveCfg = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
+		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
+		{A1289C85-9202-40B6-8027-E3A82BEA2972}.Debug|x86.ActiveCfg = Debug|Win32
+		{A1289C85-9202-40B6-8027-E3A82BEA2972}.Debug|x86.Build.0 = Debug|Win32
+		{A1289C85-9202-40B6-8027-E3A82BEA2972}.Release|x86.ActiveCfg = Release|Win32
+		{A1289C85-9202-40B6-8027-E3A82BEA2972}.Release|x86.Build.0 = Release|Win32
+		{C980A6C7-82E8-409F-9070-410FECB2FEA8}.Debug|x86.ActiveCfg = Debug|Win32
+		{C980A6C7-82E8-409F-9070-410FECB2FEA8}.Debug|x86.Build.0 = Debug|Win32
+		{C980A6C7-82E8-409F-9070-410FECB2FEA8}.Release|x86.ActiveCfg = Release|Win32
+		{C980A6C7-82E8-409F-9070-410FECB2FEA8}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D5C47A97-F9BE-44EF-B857-240D6A059C37}
+	EndGlobalSection
+EndGlobal
